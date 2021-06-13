@@ -1,0 +1,7 @@
+.idea
+main
+# exclude everything
+resources/reports/*
+
+# exception to the rule
+!resources/reports/.gitkeep
