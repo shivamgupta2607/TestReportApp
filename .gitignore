@@ -2,8 +2,8 @@
 main
 # exclude everything
 resources/reports/*
-resources/0deskera/*
+resources/testcaserepo/*
 
 # exception to the rule
 !resources/reports/.gitkeep
-!resources/0deskera/.gitkeep
+!resources/testcaserepo/.gitkeep
