@@ -23,5 +23,6 @@ mvn clean test > /dev/null 2>&1
 fileNames=`ls target/surefire-reports/*.txt`
 for eachfile in $fileNames
 do
-   cat $eachfile
+   sed -n '2p' < $eachfile
+   sed -n '4p' < $eachfile
 done

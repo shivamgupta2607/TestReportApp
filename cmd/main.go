@@ -2,75 +2,60 @@ package main
 
 import (
 	"fmt"
-	xlsx "github.com/tealeg/xlsx/v3"
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"log"
 	"os/exec"
+	"strconv"
 )
 
 func main() {
 	fmt.Println("Welcome to Test Report app")
 	filename := "resources/SampleTestFile.xlsx"
+	UserRepoSheetName := "Sheet1"
+	TestRepoSheetName := "Sheet2"
 	//filename := "/Users/shivam.gupta/projects/go/personal/TestReportApp/resources/SampleTestFile.xlsx"
-	processExcelFile(filename)
-	fmt.Println("File has been processed successfully")
-}
-
-func processExcelFile(filename string) {
-	wb, err := xlsx.OpenFile(filename)
+	f, err := excelize.OpenFile(filename)
 	if err != nil {
-		panic(err)
-	}
-	sh := wb.Sheets[0]
-	fmt.Println("No of records to process is", sh.MaxRow)
-	sheet2 := wb.Sheets[1]
-	testRow, err := sheet2.Row(1)
-	if err != nil {
-		log.Println("Error while getting testRow from test repo sheet ")
+		fmt.Println(err)
 		return
 	}
-	testCaseRepo, err := testRow.GetCell(0).FormattedValue()
-	if err != nil {
-		log.Println("Error while getting test case repo name from test repo sheet ")
-		return
+	userRepoRows := f.GetRows(UserRepoSheetName)
+	testCaseRows := f.GetRows(TestRepoSheetName)
+	tetCaseRepoRow := testCaseRows[1]
+	for i, row := range userRepoRows {
+		if i == 0 {
+			continue
+		}
+		outCell := "D" + strconv.Itoa(i+1)
+		errorCell := "E" + strconv.Itoa(i+1)
+		output, err := processRow(row, tetCaseRepoRow)
+		if err != nil {
+			f.SetCellValue(UserRepoSheetName, errorCell, err.Error())
+		}
+		f.SetCellValue(UserRepoSheetName, outCell, output)
 	}
-
-	testCaseRepoUrl, err := testRow.GetCell(1).FormattedValue()
-	if err != nil {
-		log.Println("Error while getting test case repo url row from test repo sheet ")
-		return
-	}
-	//ignoring header row
-	for i := 1; i < sh.MaxRow; i++ {
-		userRepoRow, err := sh.Row(i)
-		if err != nil {
-			log.Println("Error while getting user repo row from test repo sheet ")
-			continue
-		}
-		name, err := userRepoRow.GetCell(0).FormattedValue()
-		if err != nil {
-			log.Println("error while getting name", err)
-			continue
-		}
-		userRepo, err := userRepoRow.GetCell(1).FormattedValue()
-		if err != nil {
-			log.Println("error while getting userRepo", err)
-			continue
-		}
-		userRepoUrl, err := userRepoRow.GetCell(2).FormattedValue()
-		if err != nil {
-			log.Println("error while getting userRepoUrl", err)
-			continue
-		}
-		testCaseOutput, err := runTestCase(name, userRepo, userRepoUrl, testCaseRepo, testCaseRepoUrl)
-		if err != nil {
-			log.Println(fmt.Sprintf("error while executing testcase for user {%s}", name), err)
-			continue
-		}
-		log.Println(testCaseOutput)
+	if err := f.SaveAs(filename); err != nil {
+		println(err.Error())
 	}
 }
 
-func runTestCase(name string, userRepo string, userRepoUrl string, testRepo string, testRepoUrl string) (string, error){
+func processRow(userRepoRow []string, testCaseRepoRow []string) (string, error) {
+	name := userRepoRow[0]
+	userRepo := userRepoRow[1]
+	userRepoUrl := userRepoRow[2]
+	testCaseRepo := testCaseRepoRow[0]
+	testCaseRepoUrl := testCaseRepoRow[1]
+
+	testCaseOutput, err := runTestCase(name, userRepo, userRepoUrl, testCaseRepo, testCaseRepoUrl)
+	if err != nil {
+		log.Println(fmt.Sprintf("error while executing testcase for user {%s}", name), err)
+		return "", err
+	}
+	log.Println(testCaseOutput)
+	return testCaseOutput, nil
+}
+
+func runTestCase(name string, userRepo string, userRepoUrl string, testRepo string, testRepoUrl string) (string, error) {
 	log.Printf("Going to execute test cases for username : {%s}, userRepo : {%s}, userRepoUrl : {%s}, testRepo : {%s}, testRepoUrl {%s}", name, userRepo, userRepoUrl, testRepo, testRepoUrl)
 	out, err := exec.Command("/bin/sh", "resources/test_report.sh", name, userRepo, userRepoUrl, testRepo, testRepoUrl).Output()
 	if err != nil {
