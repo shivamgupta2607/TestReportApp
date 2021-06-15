@@ -74,7 +74,7 @@ func processRow(userRepoRow []string, testCaseRepoRow []string) (string, error) 
 
 func runTestCase(name string, userRepo string, userRepoUrl string, testRepo string) (string, error) {
 	log.Printf("Going to execute test cases for username : {%s}, userRepo : {%s}, userRepoUrl : {%s}, testRepo : {%s}", name, userRepo, userRepoUrl, testRepo)
-	out, err := exec.Command("/bin/sh", "resources/test_report.sh", name, userRepo, userRepoUrl, testRepo).Output()
+	out, err := exec.Command("/bin/sh", "resources/run_test_cases_report.sh", name, userRepo, userRepoUrl, testRepo).Output()
 	if err != nil {
 		log.Println(fmt.Sprintf("error while executing command for user {%s}", name), err)
 		return "", err
