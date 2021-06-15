@@ -1,8 +1,8 @@
 # TestReportApp
 
-#### Run Using
-  ##### go run cmd/main.go
-#### build Using
-  ##### go build cmd/main.go  
-  
-  
+#### Checkout testcases Using
+  ##### go run checkout/main.go
+#### Run testcases Using
+  ##### go run testcase/main.go  
+#### Cleanup Using
+##### sh resources/cleanup.sh
