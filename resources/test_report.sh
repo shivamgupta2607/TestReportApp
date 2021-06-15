@@ -8,7 +8,7 @@ if [ ! -d $user_name ] ; then
 else
     cd $user_name/$user_repo
     rm -rf src/test
-    cp -R ../../../0deskera/$test_case_repo/src/test src/
+    cp -R ../../../testcaserepo/$test_case_repo/src/test src/
     mvn clean test > /dev/null 2>&1;
     if [ ! -d target/surefire-reports ] ; then
         echo "code compilation failed"
