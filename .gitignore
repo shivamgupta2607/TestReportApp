@@ -7,3 +7,5 @@ resources/testcaserepo/*
 # exception to the rule
 !resources/reports/.gitkeep
 !resources/testcaserepo/.gitkeep
+
+*.xlsx
