@@ -34,19 +34,25 @@ func main() {
 		failedCell := "E" + strconv.Itoa(i+1)
 		testErrorCell := "F" + strconv.Itoa(i+1)
 		skippedCell := "G" + strconv.Itoa(i+1)
-		errorCell := "H" + strconv.Itoa(i+1)
+		successPercentCell := "H" + strconv.Itoa(i+1)
+		errorCell := "I" + strconv.Itoa(i+1)
 		output, err := processRow(row, tetCaseRepoRow)
 		if err != nil {
 			f.SetCellValue(UserRepoSheetName, errorCell, err.Error())
+			f.SetCellValue(UserRepoSheetName, successPercentCell, "0.00%")
+
 		} else {
 			counts, err := getCounts(output)
 			if err != nil {
 				f.SetCellValue(UserRepoSheetName, errorCell, err.Error())
+				f.SetCellValue(UserRepoSheetName, successPercentCell, "0.00%")
 			} else {
+				percentage := getSuccessPercentage(counts)
 				f.SetCellValue(UserRepoSheetName, ranCell, counts[0])
 				f.SetCellValue(UserRepoSheetName, failedCell, counts[1])
 				f.SetCellValue(UserRepoSheetName, testErrorCell, counts[2])
 				f.SetCellValue(UserRepoSheetName, skippedCell, counts[3])
+				f.SetCellValue(UserRepoSheetName, successPercentCell, percentage)
 			}
 		}
 	}
@@ -55,6 +61,19 @@ func main() {
 	if err := f.SaveAs(newFilePath); err != nil {
 		println(err.Error())
 	}
+}
+
+func getSuccessPercentage(counts []int) string {
+	var per float32
+	if counts[0] == 0 {
+		per = 0
+	} else {
+		per = float32(counts[1]+counts[2]+counts[3]) / float32(counts[0])
+		per = per * 100
+		per = 100 - per
+	}
+
+	return fmt.Sprintf("%.2f%%", per)
 }
 
 func processRow(userRepoRow []string, testCaseRepoRow []string) (string, error) {
@@ -87,7 +106,7 @@ func runTestCase(name string, userRepo string, userRepoUrl string, testRepo stri
 func getCounts(s string) ([]int, error) {
 	splits := strings.Split(s, "\n")
 	var slice = make([]int, 4)
-	for i := 0; i < len(splits)-1; i++ {
+	for i := 0; i < len(splits); i++ {
 		counts, err := getNumbersFromATestFile(splits[i])
 		if err != nil {
 			return slice, errors.New(fmt.Sprintf("Error getting counts {%s}", splits[i]))
