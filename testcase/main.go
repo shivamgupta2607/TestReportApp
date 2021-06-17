@@ -13,7 +13,7 @@ import (
 
 func main() {
 	fmt.Println("Welcome to Test Report app")
-	filepath := "resources/SampleTestFile.xlsx"
+	filepath := "resources/file.xlsx"
 	UserRepoSheetName := "Sheet1"
 	TestRepoSheetName := "Sheet2"
 	//filepath := "/Users/shivam.gupta/projects/go/personal/TestReportApp/resources/SampleTestFile.xlsx"
