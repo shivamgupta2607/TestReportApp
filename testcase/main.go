@@ -29,30 +29,42 @@ func main() {
 		if i == 0 {
 			continue
 		}
-
-		ranCell := "D" + strconv.Itoa(i+1)
-		failedCell := "E" + strconv.Itoa(i+1)
-		testErrorCell := "F" + strconv.Itoa(i+1)
-		skippedCell := "G" + strconv.Itoa(i+1)
-		successPercentCell := "H" + strconv.Itoa(i+1)
-		errorCell := "I" + strconv.Itoa(i+1)
-		output, err := processRow(row, tetCaseRepoRow)
-		if err != nil {
-			f.SetCellValue(UserRepoSheetName, errorCell, err.Error())
-			f.SetCellValue(UserRepoSheetName, successPercentCell, "0.00%")
-
+		ranCell := "B" + strconv.Itoa(i+1)
+		failedCell := "C" + strconv.Itoa(i+1)
+		testErrorCell := "D" + strconv.Itoa(i+1)
+		skippedCell := "E" + strconv.Itoa(i+1)
+		successPercentCell := "F" + strconv.Itoa(i+1)
+		errorCell := "G" + strconv.Itoa(i+1)
+		if f.GetCellValue(UserRepoSheetName, ranCell) != "" {
+			log.Println(fmt.Sprintf("Not running test case for {%s}", row[0]))
 		} else {
-			counts, err := getCounts(output)
+			log.Println(fmt.Sprintf("Going to run test cases for {%s}", row[0]))
+			output, err := processRow(row, tetCaseRepoRow)
 			if err != nil {
 				f.SetCellValue(UserRepoSheetName, errorCell, err.Error())
+				f.SetCellValue(UserRepoSheetName, ranCell, 0)
+				f.SetCellValue(UserRepoSheetName, failedCell, 0)
+				f.SetCellValue(UserRepoSheetName, testErrorCell, 0)
+				f.SetCellValue(UserRepoSheetName, skippedCell, 0)
 				f.SetCellValue(UserRepoSheetName, successPercentCell, "0.00%")
+
 			} else {
-				percentage := getSuccessPercentage(counts)
-				f.SetCellValue(UserRepoSheetName, ranCell, counts[0])
-				f.SetCellValue(UserRepoSheetName, failedCell, counts[1])
-				f.SetCellValue(UserRepoSheetName, testErrorCell, counts[2])
-				f.SetCellValue(UserRepoSheetName, skippedCell, counts[3])
-				f.SetCellValue(UserRepoSheetName, successPercentCell, percentage)
+				counts, err := getCounts(output)
+				if err != nil {
+					f.SetCellValue(UserRepoSheetName, errorCell, err.Error())
+					f.SetCellValue(UserRepoSheetName, ranCell, 0)
+					f.SetCellValue(UserRepoSheetName, failedCell, 0)
+					f.SetCellValue(UserRepoSheetName, testErrorCell, 0)
+					f.SetCellValue(UserRepoSheetName, skippedCell, 0)
+					f.SetCellValue(UserRepoSheetName, successPercentCell, "0.00%")
+				} else {
+					percentage := getSuccessPercentage(counts)
+					f.SetCellValue(UserRepoSheetName, ranCell, counts[0])
+					f.SetCellValue(UserRepoSheetName, failedCell, counts[1])
+					f.SetCellValue(UserRepoSheetName, testErrorCell, counts[2])
+					f.SetCellValue(UserRepoSheetName, skippedCell, counts[3])
+					f.SetCellValue(UserRepoSheetName, successPercentCell, percentage)
+				}
 			}
 		}
 	}
@@ -77,11 +89,13 @@ func getSuccessPercentage(counts []int) string {
 }
 
 func processRow(userRepoRow []string, testCaseRepoRow []string) (string, error) {
-	name := userRepoRow[0]
-	userRepo := userRepoRow[1]
-	userRepoUrl := userRepoRow[2]
-	testCaseRepo := testCaseRepoRow[0]
-
+	userRepoUrl := userRepoRow[0]
+	split := strings.Split(userRepoUrl, "/")
+	userRepo := split[len(split)-1]
+	name := split[len(split)-2]
+	testCaseRepoUrl := testCaseRepoRow[0]
+	tsplit := strings.Split(testCaseRepoUrl, "/")
+	testCaseRepo := tsplit[len(tsplit)-1]
 	testCaseOutput, err := runTestCase(name, userRepo, userRepoUrl, testCaseRepo)
 	if err != nil {
 		log.Println(fmt.Sprintf("error while executing testcase for user {%s}", name), err)

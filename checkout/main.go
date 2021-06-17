@@ -5,6 +5,7 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"log"
 	"os/exec"
+	"strings"
 )
 
 func main() {
@@ -21,8 +22,9 @@ func main() {
 	userRepoRows := f.GetRows(UserRepoSheetName)
 	testCaseRows := f.GetRows(TestRepoSheetName)
 	testCaseRepoRow := testCaseRows[1]
-	testCaseRepo := testCaseRepoRow[0]
-	testCaseRepoUrl := testCaseRepoRow[1]
+	testCaseRepoUrl := testCaseRepoRow[0]
+	split := strings.Split(testCaseRepoUrl, "/")
+	testCaseRepo := split[len(split)-1]
 	checkoutTestCaseRepo(testCaseRepo, testCaseRepoUrl)
 	for i, row := range userRepoRows {
 		if i == 0 {
@@ -33,9 +35,10 @@ func main() {
 }
 
 func processRow(userRepoRow []string, testCaseRepoRow []string) {
-	name := userRepoRow[0]
-	userRepo := userRepoRow[1]
-	userRepoUrl := userRepoRow[2]
+	userRepoUrl := userRepoRow[0]
+	split := strings.Split(userRepoUrl, "/")
+	userRepo := split[len(split)-1]
+	name := split[len(split)-2]
 	checkoutUserRepo(name, userRepo, userRepoUrl)
 }
 
@@ -46,8 +49,7 @@ func checkoutTestCaseRepo(testRepo string, testRepoUrl string) {
 		log.Println(fmt.Sprintf("error while checking out test case repo."), err)
 		return
 	}
-	log.Printf("TestCase Code checkout successfully.")
-	log.Println(testRepoCheckoutOutput)
+	log.Println(string(testRepoCheckoutOutput))
 }
 
 func checkoutUserRepo(name string, userRepo string, userRepoUrl string) {
@@ -57,6 +59,5 @@ func checkoutUserRepo(name string, userRepo string, userRepoUrl string) {
 		log.Println(fmt.Sprintf("error while checking out user repo {%s}", name), err)
 		return
 	}
-	log.Printf("Code checkout successfully for username {%s}", name)
-	log.Println(userRepoCheckoutOutput)
+	log.Println(string(userRepoCheckoutOutput))
 }
